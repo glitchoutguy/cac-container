@@ -30,7 +30,6 @@ Verify that the directory structure where the USB devices are mapped exists.
 ## 3. Container Creation
 
 Use the following command to create the Distrobox container. This command specifies a recent Fedora image and includes necessary flags for device integration and service management.
-Bash
 
     distrobox create -r --init -n sc-firefox -i registry.fedoraproject.org/fedora:42 --additional-packages "systemd dbus dbus-daemon" --volume /dev/bus/usb:/dev/bus/usb:rw
 
