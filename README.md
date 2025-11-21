@@ -57,7 +57,7 @@ Note: All subsequent commands are run inside the Distrobox container unless expl
 Update the container's package list and install Firefox along with the smart card utilities.
 
     sudo dnf update -y
-    sudo dnf install -y firefox pcsc-lite pcsc-lite-ccid pcsc-tools openssl
+    sudo dnf install -y firefox pcsc-lite pcsc-lite-ccid pcsc-tools openssl dos2unix
 
 Package	Purpose
 
@@ -67,7 +67,8 @@ Package	Purpose
 | **`pcsc-lite`** | The **daemon** that manages communication between the physical smart card reader and the applications (like Firefox). |
 | **`pcsc-lite-ccid`** | The **driver bundle** providing support for CCID-compliant smart card readers. |
 | **`pcsc-tools`** | Provides utilities, such as **`pcsc_scan`**, used for testing the smart card reader connection and functionality. |
-| **`openssl`** | Tool used to check certificate validity. Used to verify downloaded certificates against DoD hosted certificates. |
+| **`openssl`** | Tool used to check certificate validity. Used to verify downloaded certificates. |
+| **`dos2unix`** | Compatibility tool for reading certificate output. Used to verify downloaded certificates. |
 
 ## 6. Enabling and Checking Services
 
