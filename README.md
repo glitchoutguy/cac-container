@@ -57,7 +57,7 @@ Note: All subsequent commands are run inside the Distrobox container unless expl
 Update the container's package list and install Firefox along with the smart card utilities.
 
     sudo dnf update -y
-    sudo dnf install -y firefox pcsc-lite pcsc-lite-ccid pcsc-tools
+    sudo dnf install -y firefox pcsc-lite pcsc-lite-ccid pcsc-tools openssl
 
 Package	Purpose
 
@@ -67,6 +67,7 @@ Package	Purpose
 | **`pcsc-lite`** | The **daemon** that manages communication between the physical smart card reader and the applications (like Firefox). |
 | **`pcsc-lite-ccid`** | The **driver bundle** providing support for CCID-compliant smart card readers. |
 | **`pcsc-tools`** | Provides utilities, such as **`pcsc_scan`**, used for testing the smart card reader connection and functionality. |
+| **`openssl`** | Tool used to check certificate validity. Used to verify downloaded certificates against DoD hosted certificates. |
 
 ## 6. Enabling and Checking Services
 
@@ -96,6 +97,8 @@ Failure: If it fails, proceed to the Troubleshooting section.
 
 ## 8. Configuring Firefox
 
+### Security Device
+
 Open Firefox
 
     firefox &
@@ -113,15 +116,35 @@ Enter the path to your security device driver:
 
     /usr/lib64/p11-kit-proxy.so
 
+### DoD Certificates
+
 Download the DoD Certs from: https://www.cyber.mil/pki-pke/document-library
 
-DoD Approved External PKI Certificate Trust Chains - Version ##.# (Download the latest ones)
+PKI CA Certificate Bundles: PKCS#7 for DoD PKI Only - Version #.## (Download the latest ones)
 
-Unzip the file and locate the _DoD folder, you do not need any of the other ones
+Unzip the file and within the certificates folder run the following command to determine the SHA1 Fingerprint of the Root CA:
 
-Install all certificates in this folder (.cer files) by searching "Cert" in the settings search bar and clicking "View Certificates"
+    openssl x509 -in DoD_PKE_CA_chain.pem -subject -issuer -fingerprint -noout
 
-You will then need to import each certificate one-by-one, checking both permission boxes in the window. (There is certainly a way to automate this I just havent figured it out)
+Note the SHA1 Fingerprint value and check it against the values posted at: https://crl.gds.disa.mil/
+
+Select the same CA identified from your command i.e.
+    
+    CN=DoD Root CA 6
+
+Submit selection, click "View", and scroll to the bottom and verify the value of the SHA1 Fingerprint. **These values should be matching, do not use certificates that do not match**
+
+Verify the S/MIME signatures in your .sha256 file with the following command:
+
+    openssl smime -verify -in Certificates_PKCS7_v5_14_DoD.sha256 -inform DER -CAfile DoD_PKE_CA_chain.pem | dos2unix | sha256sum -c
+
+There may be some errors, but as long as each .p7b file reads as succcessful then you may move on.
+
+To import the certificates into firefox, run the following command:
+
+    for n in *der.p7b; do certutil -d sql:$HOME/.pki/nssdb -A -t TC -n $n -i $n; done
+
+You can verify the certificates are installed by restarting firefox then navigating to "Certificates" in settings. All of the certificates should be listed under "U.S. Government" 
 
 ## 9. Troubleshooting 🛠️
 
